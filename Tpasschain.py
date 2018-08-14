@@ -11,7 +11,7 @@ def main():
 
   nowDate = QDate.currentDate()
   nowTime = QTime.currentTime()
-    print("current timestamp: {} {}".format(nowDate.toString(Qt.ISODate),nowTime.toString(Qt.DefaultLocaleLongDate)))
+  print("current timestamp: {} {}".format(nowDate.toString(Qt.ISODate),nowTime.toString(Qt.DefaultLocaleLongDate)))
 
   # print out into eviroment
   print("startup arguments: {}".format(sys.argv))
