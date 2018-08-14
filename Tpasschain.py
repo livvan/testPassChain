@@ -20,7 +20,7 @@ def main():
   # write in binary file
   rawdata.write(str.encode("{}".format(sys.argv)))
 
-  sys.exit(0)
+  sys.exit(0) nmbjh
 
 
 if __name__ == "__main__":
