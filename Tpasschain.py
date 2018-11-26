@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from os import getenv
 
 from PyQt5.QtCore import QDateTime, Qt
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QIcon, QFont, QColor
 from PyQt5.QtWidgets import QToolTip, QPushButton, QAction, QTextEdit, QApplication, QMainWindow, QMessageBox, \
-  QDesktopWidget, QGridLayout, QWidget
+  QDesktopWidget, QGridLayout, QWidget, QLCDNumber, QSlider, QInputDialog, QFrame, QColorDialog, QFileDialog
 
 
 def main():
@@ -61,66 +62,106 @@ class WindowExample(QMainWindow):
     self.setToolTip('This is a sample window')
 
     #create menu item
-    newAct = QAction('New', self)
-    newAct.setShortcut('Ctrl+N')
+    actionNew = QAction('New', self)
+    actionNew.setStatusTip('New')
+    actionNew.setShortcut('Ctrl+N')
 
-    saveAct = QAction('Save', self)
-    saveAct.setShortcut('Ctrl+S')
+    actionSave = QAction('Save', self)
+    actionSave.setStatusTip('Save')
+    actionSave.setShortcut('Ctrl+S')
 
-    loadAct = QAction('Load', self)
-    loadAct.setShortcut('Ctrl+L')
+    actionLoad = QAction(QIcon('load.png'),'Load', self)
+    actionLoad.setStatusTip('Load')
+    actionLoad.setShortcut('Ctrl+L')
+    actionLoad.triggered.connect(self.showLoadDialog)
 
-    viewStatAct = QAction('View statusbar', self, checkable=True)
-    viewStatAct.setStatusTip('View statusbar')
-    viewStatAct.setChecked(True)
-    viewStatAct.triggered.connect(self.toggleStatus)
+    actionToggleStatusBar = QAction('View statusbar', self, checkable=True)
+    actionToggleStatusBar.setStatusTip('View statusbar')
+    actionToggleStatusBar.setChecked(True)
+    actionToggleStatusBar.triggered.connect(self.toggleStatus)
 
-    exitAct = QAction('&Exit', self)
-    exitAct.setShortcut('Ctrl+Q')
-    exitAct.setStatusTip('Exit application')
-    exitAct.triggered.connect(self.close)
+    actionExit = QAction('&Exit', self)
+    actionExit.setShortcut('Ctrl+Q')
+    actionExit.setStatusTip('Exit application')
+    actionExit.triggered.connect(self.close)
 
     #add menu to menubar
     menubar = self.menuBar()
-    mainMenu = menubar.addMenu('&Main')
+    menuMain = menubar.addMenu('&Main')
 
     #add menu items to menu
-    mainMenu.addAction(newAct)
-    mainMenu.addAction(saveAct)
-    mainMenu.addAction(loadAct)
-    mainMenu.addAction(viewStatAct)
-    mainMenu.addAction(exitAct)
+    menuMain.addAction(actionNew)
+    menuMain.addAction(actionSave)
+    menuMain.addAction(actionLoad)
+    menuMain.addAction(actionToggleStatusBar)
+    menuMain.addAction(actionExit)
 
-    #creat text block
-    textInput = QTextEdit()
+    #create text block
+    textMain = QTextEdit()
+    textMain.setMouseTracking(True)
 
-    #create sava button
-    saveButton = QPushButton('Save', self)
-    saveButton.resize(saveButton.sizeHint())
+    #create lcd number screen
+    lcdnumber = QLCDNumber(self)
+    lcdnumber.setMouseTracking(True)
+
+    #create slider
+    sliderLcd = QSlider(Qt.Horizontal, self)
+    sliderLcd.valueChanged.connect(lcdnumber.display)
+    sliderLcd.setMouseTracking(True)
+
+    #create color select button
+    buttonColor = QPushButton('Color', self)
+    buttonColor.setToolTip('This is sample <b>Color Select Dialog</b> button')
+    buttonColor.setToolTip('Select color')
+    buttonColor.resize(buttonColor.sizeHint())
+    buttonColor.clicked.connect(self.showColorDialog)
+
+    #create save button
+    buttonSave = QPushButton('Save', self)
+    buttonSave.setToolTip('This is a sample <b>Save</b> button')
+    buttonSave.setStatusTip('Save changes')
+    buttonSave.resize(buttonSave.sizeHint())
+    buttonSave.clicked.connect(self.buttonClicked)
 
     #create exit button
-    exitButton = QPushButton('Exit', self)
-    exitButton.setToolTip('This is a sample <b>Exit</b> button')
-    exitButton.resize(exitButton.sizeHint())
-    exitButton.setStatusTip('Exit application')
-    exitButton.clicked.connect(self.close)
+    buttonExit = QPushButton('Exit', self)
+    buttonExit.resize(buttonExit.sizeHint())
+    buttonExit.setToolTip('This is a sample <b>Exit</b> button')
+    buttonExit.setStatusTip('Exit application')
+    buttonExit.clicked.connect(self.close)
+
+    #create color frame
+    col = QColor(0, 0, 0)
+    self.frameColored = QFrame(self)
+    self.frameColored.setStyleSheet("QWidget { background-color: %s }" % col.name())
+    self.frameColored.setMouseTracking(True)
 
     #create grid layout
     grid = QGridLayout()
-    grid.setSpacing(10)
+    #grid.setColumnStretch(5, 5)
+    grid.setSpacing(20)
 
-    grid.addWidget(textInput, 0, 0, 1, 4)
-    grid.addWidget(saveButton, 1, 2)
-    grid.addWidget(exitButton, 1, 3)
+    grid.addWidget(textMain, 0, 0, 1, 2)
+    grid.addWidget(lcdnumber, 0, 2, 1, 1)
+    grid.addWidget(sliderLcd, 1, 0, 1, 3)
+    grid.addWidget(buttonColor, 2, 1)
+    grid.addWidget(buttonSave, 2, 2)
+    grid.addWidget(buttonExit, 2, 3)
+    grid.addWidget(self.frameColored, 0, 3, 2, 1)
 
+    #workspaceWidget = QWidget()
     workspaceWidget = QWidget()
     workspaceWidget.setLayout(grid)
-    self.setCentralWidget(workspaceWidget)
+    workspaceWidget.setMouseTracking(True)
+
+    self.showGreetDialog()
 
     self.setGeometry(300, 300, 300, 220)
     self.center()
-    self.setWindowTitle('Sample Window')
+    self.setCentralWidget(workspaceWidget)
+    #self.setWindowTitle('Sample Window')
     self.setWindowIcon(QIcon('sample.png'))
+    self.setMouseTracking(True)
 
     self.statusBar().showMessage('Ready')
 
@@ -130,6 +171,32 @@ class WindowExample(QMainWindow):
     selfFrame.moveCenter(desktopCenter)
     self.move(selfFrame.topLeft())
 
+  def showGreetDialog(self):
+    stringAnswer, boolAnswer = QInputDialog.getText(self, 'Input Dialog', 'Enter your name:')
+
+    if boolAnswer:
+      if stringAnswer == '':
+        stringAnswer = 'Placeholder'
+      self.setWindowTitle('Sample Window for {}'.format(stringAnswer))
+    else:
+      self.setWindowTitle('Sample Window')
+
+  def showColorDialog(self):
+    color = QColorDialog.getColor()
+
+    if color.isValid():
+      self.frameColored.setStyleSheet("QWidget { background-color: %s }" % color.name())
+
+  def showLoadDialog(self):
+    fileName = QFileDialog.getOpenFileName(self, 'Load file', getenv('USERPROFILE') + '/Documents')
+
+    if fileName[0]:
+      file = open(fileName[0], 'r')
+
+      with file:
+        data = file.read()
+        self.textEdit.setText(data)
+
   def closeEvent(self, event):
 
     reply = QMessageBox.question(self, 'Exit', "Are you really want to exit?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -138,12 +205,28 @@ class WindowExample(QMainWindow):
     else:
       event.ignore()
 
+  def keyPressEvent(self, keyPressed):
+    if keyPressed.key() == Qt.Key_Escape:
+      self.close()
+
+  def buttonClicked(self):
+
+    self.statusBar().showMessage('\'{}\' button was pressed'.format(self.sender().text()))
+
   def toggleStatus(self, state):
     if state:
       self.statusBar().showMessage('Ready')
       self.statusBar().show()
     else:
       self.statusBar().hide()
+
+  def mouseMoveEvent(self, e):
+    x = e.x()
+    y = e.y()
+
+    text = "x: {0},  y: {1}".format(x, y)
+    self.statusBar().showMessage(text)
+
 
 if __name__ == "__main__":
   main()
